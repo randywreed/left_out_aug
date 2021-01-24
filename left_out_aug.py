@@ -60,7 +60,8 @@ def run_augmentation(func,newaugs,df):
         #print(type(text))
         #flag=row['Left_out_flag']
         flag=row['label']
-        sents=split_para(text)
+        #sents=split_para(text)
+        sents=text.split('@@|')
         s=len(sents)
         #print('num of sent {}'.format(s))
         cnt=0
