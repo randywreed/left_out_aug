@@ -3,6 +3,7 @@ from nltk.util import Index
 nltk.download('punkt')
 import pandas as pd
 import os
+from tqdm import tqdm
 os.environ["MODEL_DIR"] = '/spell/content/'
 model_dir='/spell/content'
 import nlpaug.augmenter.char as nac
@@ -53,8 +54,9 @@ def xlnet_sub_aug(text):
     augmented_text=aug.augment(text)
     return augmented_text
 
+
 def run_augmentation(func,newaugs,df):
-    for idx,row in df.iterrows():
+  for idx,row in tqdm(df.iterrows(),total=df.shape[0]):
         #text=row['Creation Content_last']
         text=str(row['text'])
         #print(type(text))
@@ -76,7 +78,7 @@ def run_augmentation(func,newaugs,df):
                     new_text+=sents[k]
             newaugs.append([new_text,flag])
             #print('save augmentation for para changed sent {}'.format(idx))
-    return newaugs
+  return newaugs
 
 def save_em(name,newaugs,outdf1):
     newaugdf=pd.DataFrame(newaugs,columns=['text', 'label'])
