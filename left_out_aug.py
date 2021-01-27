@@ -110,4 +110,5 @@ for a in augs:
   newaugs=run_augmentation(a,newaugs,df)
   name=a+"_"+output
   df=save_em(name,newaugs,df)
+  print("{} has {} records".format(name,df.shape[0]))
 print(f"total time {time()-start_time:0.4f}")
