@@ -88,6 +88,8 @@ def save_em(name,newaugs,outdf1):
     return outdf1
 
 import argparse
+from time import time
+start_time=time()
 parser=argparse.ArgumentParser(description="augmentations to run on google drive csv format columns=text,label")
 parser.add_argument("-gdrive", help="gdrive url (must be shared to all with link)")
 parser.add_argument("-output",help="output file stem (ex. saveit.csv)")
@@ -108,3 +110,4 @@ for a in augs:
   newaugs=run_augmentation(a,newaugs,df)
   name=a+"_"+output
   df=save_em(name,newaugs,df)
+print(f"total time {time()-start_time:0.4f}")
