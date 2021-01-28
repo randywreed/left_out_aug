@@ -3,8 +3,9 @@ from nltk.util import Index
 nltk.download('punkt')
 import pandas as pd
 import os
-os.environ["MODEL_DIR"] = '/spell/content/'
-model_dir='/spell/content'
+from tqdm import tqdm
+os.environ["MODEL_DIR"] = './content/'
+model_dir='./content'
 import nlpaug.augmenter.char as nac
 import nlpaug.augmenter.word as naw
 import nlpaug.augmenter.sentence as nas
@@ -30,7 +31,7 @@ def spelling_aug(text):
 
 def word2vec_aug(text):
   aug = naw.WordEmbsAug(
-    model_type='word2vec', model_path='/spell/leftout/GoogleNews-vectors-negative300.bin',
+    model_type='word2vec', model_path='GoogleNews-vectors-negative300.bin',
     action="substitute")
   augmented_text = aug.augment(text)
   return augmented_text
@@ -53,8 +54,19 @@ def xlnet_sub_aug(text):
     augmented_text=aug.augment(text)
     return augmented_text
 
+def ppdb_sub_aug(text):
+  aug=naw.SynonymAug(aug_src='ppdb', model_path='ppdb-2-0-m-all')
+  augmented_text=aug.augment(text)
+  return augmented_text
+
+def trans_sub_aug(text):
+  aug=naw.BackTranslationAug(from_model_name='transformer.wmt19.en-de',
+    to_model_name='transformer.wmt19.de-en')
+  augmented_text=aug.augmented_text(text)
+  return augmented_text
+
 def run_augmentation(func,newaugs,df):
-    for idx,row in df.iterrows():
+  for idx,row in tqdm(df.iterrows(),total=df.shape[0]):
         #text=row['Creation Content_last']
         text=str(row['text'])
         #print(type(text))
@@ -76,7 +88,7 @@ def run_augmentation(func,newaugs,df):
                     new_text+=sents[k]
             newaugs.append([new_text,flag])
             #print('save augmentation for para changed sent {}'.format(idx))
-    return newaugs
+  return newaugs
 
 def save_em(name,newaugs,outdf1):
     newaugdf=pd.DataFrame(newaugs,columns=['text', 'label'])
@@ -86,6 +98,8 @@ def save_em(name,newaugs,outdf1):
     return outdf1
 
 import argparse
+from time import time
+start_time=time()
 parser=argparse.ArgumentParser(description="augmentations to run on google drive csv format columns=text,label")
 parser.add_argument("-gdrive", help="gdrive url (must be shared to all with link)")
 parser.add_argument("-output",help="output file stem (ex. saveit.csv)")
@@ -106,3 +120,5 @@ for a in augs:
   newaugs=run_augmentation(a,newaugs,df)
   name=a+"_"+output
   df=save_em(name,newaugs,df)
+  print("{} has {} records".format(name,df.shape[0]))
+print(f"total time {time()-start_time:0.4f}")
