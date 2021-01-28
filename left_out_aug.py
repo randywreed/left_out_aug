@@ -4,8 +4,8 @@ nltk.download('punkt')
 import pandas as pd
 import os
 from tqdm import tqdm
-os.environ["MODEL_DIR"] = '/spell/content/'
-model_dir='/spell/content'
+os.environ["MODEL_DIR"] = './content/'
+model_dir='./content'
 import nlpaug.augmenter.char as nac
 import nlpaug.augmenter.word as naw
 import nlpaug.augmenter.sentence as nas
@@ -31,7 +31,7 @@ def spelling_aug(text):
 
 def word2vec_aug(text):
   aug = naw.WordEmbsAug(
-    model_type='word2vec', model_path='/spell/leftout/GoogleNews-vectors-negative300.bin',
+    model_type='word2vec', model_path='GoogleNews-vectors-negative300.bin',
     action="substitute")
   augmented_text = aug.augment(text)
   return augmented_text

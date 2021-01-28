@@ -50,13 +50,12 @@ def nbert_ins_aug(row):
   new_row=row.to_dict()
   new_row['text']=aug.augment(row['text'])
 
-
-
 def xlnet_sub_aug(row):
     aug=naw.ContextualWordEmbsAug(
     model_path='xlnet-base-cased',action="substitute")
     new_row=row.to_dict()
     new_row['text']=aug.augment(text)
+
 
 def save_em(output,a,outdf1):
     name=a+"_"+output
@@ -103,6 +102,14 @@ parser.add_argument("-augs",help="use a comma separate list of augmentations key
 parser.add_argument("-nodisp",help="supress display",action="store_true")
 args=parser.parse_args()
 
+func_dict={"keyboard_aug":"nac.KeyboardAug",
+  "spelling_aug":"naw.SpellingAug",
+  "word2vec_aug":"naw.WordEmbsAug",
+  "bert_sub_aug":"naw.ContextualWordEmbsAug",
+  "bert_ins_aug":"naw.ContextualWordEmbsAug",
+  "xlnet_sub_aug":"naw.ContextualWordEmbsAug"
+
+}
 url=args.gdrive
 import pandas as pd
 if args.nodisp==False:
