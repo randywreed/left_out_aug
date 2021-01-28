@@ -54,6 +54,16 @@ def xlnet_sub_aug(text):
     augmented_text=aug.augment(text)
     return augmented_text
 
+def ppdb_sub_aug(text):
+  aug=naw.SynonymAug(aug_src='ppdb', model_path='ppdb-2-0-m-all')
+  augmented_text=aug.augment(text)
+  return augmented_text
+
+def trans_sub_aug(text):
+  aug=naw.BackTranslationAug(from_model_name='transformer.wmt19.en-de',
+    to_model_name='transformer.wmt19.de-en')
+  augmented_text=aug.augmented_text(text)
+  return augmented_text
 
 def run_augmentation(func,newaugs,df):
   for idx,row in tqdm(df.iterrows(),total=df.shape[0]):

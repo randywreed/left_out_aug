@@ -81,9 +81,12 @@ def run_augmentation(func,newaugs,df,nodisp):
   #run the augmentation on new dataframe
   global aug_out
   aug_out=[]
-
+  new_df_list=new_df['text'].tolist()
   for a in func:
     print('starting {} augmentation'.format(a))
+    new_method=func_dict[a]['method']
+    meth_args=func_dict[a]['args'][0]
+    aug=nafc.Sometimes([globals[new_method](meth_args)])
     new_df.progress_apply(lambda row: globals()[a](row),axis=1)
     tmp_df=pd.DataFrame(aug_out)
     new_df=new_df.append(tmp_df,ignore_index=True)
@@ -102,12 +105,12 @@ parser.add_argument("-augs",help="use a comma separate list of augmentations key
 parser.add_argument("-nodisp",help="supress display",action="store_true")
 args=parser.parse_args()
 
-func_dict={"keyboard_aug":"nac.KeyboardAug",
-  "spelling_aug":"naw.SpellingAug",
-  "word2vec_aug":"naw.WordEmbsAug",
-  "bert_sub_aug":"naw.ContextualWordEmbsAug",
-  "bert_ins_aug":"naw.ContextualWordEmbsAug",
-  "xlnet_sub_aug":"naw.ContextualWordEmbsAug"
+func_dict={"keyboard_aug":{"method":"nac.KeyboardAug","args":[]},
+  "spelling_aug":{"method":"naw.SpellingAug","args":["n=1"]},
+  "word2vec_aug":{"method":"naw.WordEmbsAug","args":["model='word2vec","model_path='GoogleNews-vectors-negative300.bin'","action='substitute'"],
+  "bert_sub_aug":{"method":"naw.ContextualWordEmbsAug","args":["model_path='bert-base-uncased'","action='substitute'"],
+  "bert_ins_aug":{"method":"naw.ContextualWordEmbsAug","args":["model_path='distilbert-base-uncased'","action='insert'"],
+  "xlnet_sub_aug":{"method":"naw.ContextualWordEmbsAug","args":["model_path='distilbert-base-uncased'","action='insert'"]
 
 }
 url=args.gdrive
