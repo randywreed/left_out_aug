@@ -1,0 +1,22 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+fairseq = "*"
+fastbpe = "*"
+nltk = "*"
+numpy = "*"
+sacremoses = "*"
+torch = "*"
+transformers = "*"
+nlpaug = {git = "https://github.com/makcedward/nlpaug.git"}
+pandas = "*"
+ipykernel = "*"
+tqdm = "*"
+
+[requires]
+python_version = "3.7"
