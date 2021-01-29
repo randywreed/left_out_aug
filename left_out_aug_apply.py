@@ -97,11 +97,12 @@ def run_augmentation(func,newaugs,df,nodisp):
     tmp_df=pd.DataFrame(list(zip(aug_out,new_df_label)),columns=["text","label"])
     new_df=new_df.append(tmp_df,ignore_index=True)
     aug_out=[]
-    print('{} augmentation complete, time elapsed {:.4f}'.format(a,((time()-start_time))))
+    print('{} augmentation complete, time elapsed {}'.format(a,(datetime.timedelta(seconds=time()-start_time))))
     save_em(args.output,a,new_df)
   return new_df
 
 from time import time
+import datetime
 start_time=time()
 import argparse
 parser=argparse.ArgumentParser(description="augmentations to run on google drive csv format columns=text,label")
