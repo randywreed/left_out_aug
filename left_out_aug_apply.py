@@ -135,4 +135,3 @@ augs=[x.strip() for x in args.augs.split(",")]
 print(augs)
 newaugs_df=run_augmentation(augs,newaugs,df,nodisp)
 print('{} total records'.format(newaugs_df.shape[0]))
-print(f"total time {time()-start_time:0.4f}")
