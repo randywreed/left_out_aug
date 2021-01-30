@@ -64,7 +64,7 @@ def save_em(output,a,outdf1):
     return outdf1
 
 def run_augmentation(func,newaugs,df,nodisp):
-  
+  from time import time
   #split sentences, build new df
   output=[]
   def new_split_para(row):
@@ -82,20 +82,27 @@ def run_augmentation(func,newaugs,df,nodisp):
   global aug_out
   aug_out=[]
   new_df_list=new_df['text'].tolist()
+  new_df_label=new_df['label'].tolist()
   for a in func:
     print('starting {} augmentation'.format(a))
+    start_time=time()
     new_method=func_dict[a]['method']
-    meth_args=func_dict[a]['args'][0]
-    aug=nafc.Sometimes([globals[new_method](meth_args)])
-    new_df.progress_apply(lambda row: globals()[a](row),axis=1)
-    tmp_df=pd.DataFrame(aug_out)
+    meth_args=func_dict[a]['args']
+    m_pieces=new_method.split(".")
+    m=globals()[m_pieces[0]]
+    func=getattr(m,m_pieces[1])
+    aug=nafc.Sequential(func(**meth_args))
+    aug_out=aug.augment(new_df_list)
+    print('original record count {} adding {} records'.format(len(new_df_list),len(aug_out)))
+    tmp_df=pd.DataFrame(list(zip(aug_out,new_df_label)),columns=["text","label"])
     new_df=new_df.append(tmp_df,ignore_index=True)
     aug_out=[]
-    print('{} augmentation complete'.format(a))
+    print('{} augmentation complete, time elapsed {}, total records {}'.format(a,(datetime.timedelta(seconds=time()-start_time)),new_df.shape[0]))
     save_em(args.output,a,new_df)
   return new_df
 
 from time import time
+import datetime
 start_time=time()
 import argparse
 parser=argparse.ArgumentParser(description="augmentations to run on google drive csv format columns=text,label")
@@ -105,12 +112,12 @@ parser.add_argument("-augs",help="use a comma separate list of augmentations key
 parser.add_argument("-nodisp",help="supress display",action="store_true")
 args=parser.parse_args()
 
-func_dict={"keyboard_aug":{"method":"nac.KeyboardAug","args":[]},
-  "spelling_aug":{"method":"naw.SpellingAug","args":["n=1"]},
-  "word2vec_aug":{"method":"naw.WordEmbsAug","args":["model='word2vec","model_path='GoogleNews-vectors-negative300.bin'","action='substitute'"],
-  "bert_sub_aug":{"method":"naw.ContextualWordEmbsAug","args":["model_path='bert-base-uncased'","action='substitute'"],
-  "bert_ins_aug":{"method":"naw.ContextualWordEmbsAug","args":["model_path='distilbert-base-uncased'","action='insert'"],
-  "xlnet_sub_aug":{"method":"naw.ContextualWordEmbsAug","args":["model_path='distilbert-base-uncased'","action='insert'"]
+func_dict={"keyboard_aug":{"method":"nac.KeyboardAug","args":{}},
+  "spelling_aug":{"method":"naw.SpellingAug","args":{}},
+  "word2vec_aug":{"method":"naw.WordEmbsAug","args":{"model_type":"word2vec","model_path":"GoogleNews-vectors-negative300.bin","action":"substitute"}},
+  "bert_sub_aug":{"method":"naw.ContextualWordEmbsAug","args":{"model_path":"bert-base-uncased","model_type":"bert","action":"substitute"}},
+  "bert_ins_aug":{"method":"naw.ContextualWordEmbsAug","args":{"model_path":"bert-base-uncased","model_type":"bert","action":"insert"}},
+  "xlnet_sub_aug":{"method":"naw.ContextualWordEmbsAug","args":{"model_path":"xlnet-base-cased","model_type":"xlnet","action":"substitute"}}
 
 }
 url=args.gdrive
@@ -128,4 +135,3 @@ augs=[x.strip() for x in args.augs.split(",")]
 print(augs)
 newaugs_df=run_augmentation(augs,newaugs,df,nodisp)
 print('{} total records'.format(newaugs_df.shape[0]))
-print(f"total time {time()-start_time:0.4f}")

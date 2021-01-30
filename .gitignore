@@ -1,0 +1,8 @@
+*.txt
+*.zip
+*.csv
+*.vec
+**/.vscode
+=*
+*.bin
+ppdb*
