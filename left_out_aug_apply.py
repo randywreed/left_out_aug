@@ -88,6 +88,10 @@ def run_augmentation(func,newaugs,df,nodisp):
     start_time=time()
     new_method=func_dict[a]['method']
     meth_args=func_dict[a]['args']
+    if args.gpu:
+      meth_args['device']="cuda"
+    if args.skip:
+      meth_args['stopwords']=args.skip.split(',')
     m_pieces=new_method.split(".")
     m=globals()[m_pieces[0]]
     func=getattr(m,m_pieces[1])
@@ -110,6 +114,8 @@ parser.add_argument("-gdrive", help="gdrive url (must be shared to all with link
 parser.add_argument("-output",help="output file stem (ex. saveit.csv)")
 parser.add_argument("-augs",help="use a comma separate list of augmentations keyboard_aug, spelling_aug,word2vec_aug,bert_sub_aug,bert_ins_aug,xlnet_sub_aug")
 parser.add_argument("-nodisp",help="supress display",action="store_true")
+parser.add_argument("-gpu",help="run on gpu",action="store_true")
+parser.add_argument("-skip",help="enter words that should not be replaced (comma separated)")
 args=parser.parse_args()
 
 func_dict={"keyboard_aug":{"method":"nac.KeyboardAug","args":{}},
