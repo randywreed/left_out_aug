@@ -81,11 +81,12 @@ def run_augmentation(func,newaugs,df,nodisp):
   #run the augmentation on new dataframe
   global aug_out
   aug_out=[]
-  new_df_list=new_df['text'].tolist()
-  new_df_label=new_df['label'].tolist()
+  
   for a in func:
     print('starting {} augmentation'.format(a))
     start_time=time()
+    new_df_list=new_df['text'].tolist()
+    new_df_label=new_df['label'].tolist()
     new_method=func_dict[a]['method']
     meth_args=func_dict[a]['args']
     if args.gpu:
