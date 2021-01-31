@@ -91,13 +91,13 @@ def run_augmentation(func,newaugs,df,nodisp):
     m_pieces=new_method.split(".")
     m=globals()[m_pieces[0]]
     func=getattr(m,m_pieces[1])
-    aug=nafc.Sometimes(func(**meth_args))
+    aug=nafc.Sequential(func(**meth_args))
     aug_out=aug.augment(new_df_list)
-
+    print('original record count {} adding {} records'.format(len(new_df_list),len(aug_out)))
     tmp_df=pd.DataFrame(list(zip(aug_out,new_df_label)),columns=["text","label"])
     new_df=new_df.append(tmp_df,ignore_index=True)
     aug_out=[]
-    print('{} augmentation complete, time elapsed {}'.format(a,(datetime.timedelta(seconds=time()-start_time))))
+    print('{} augmentation complete, time elapsed {}, total records {}'.format(a,(datetime.timedelta(seconds=time()-start_time)),new_df.shape[0]))
     save_em(args.output,a,new_df)
   return new_df
 
@@ -115,9 +115,9 @@ args=parser.parse_args()
 func_dict={"keyboard_aug":{"method":"nac.KeyboardAug","args":{}},
   "spelling_aug":{"method":"naw.SpellingAug","args":{}},
   "word2vec_aug":{"method":"naw.WordEmbsAug","args":{"model_type":"word2vec","model_path":"GoogleNews-vectors-negative300.bin","action":"substitute"}},
-  "bert_sub_aug":{"method":"naw.ContextualWordEmbsAug","args":{"model_path":"bert-base-uncased","action":"substitute"}},
-  "bert_ins_aug":{"method":"naw.ContextualWordEmbsAug","args":{"model_path":"distilbert-base-uncased","action":"insert"}},
-  "xlnet_sub_aug":{"method":"naw.ContextualWordEmbsAug","args":{"model_path":"distilbert-base-uncased","action":"insert"}}
+  "bert_sub_aug":{"method":"naw.ContextualWordEmbsAug","args":{"model_path":"bert-base-uncased","model_type":"bert","action":"substitute"}},
+  "bert_ins_aug":{"method":"naw.ContextualWordEmbsAug","args":{"model_path":"bert-base-uncased","model_type":"bert","action":"insert"}},
+  "xlnet_sub_aug":{"method":"naw.ContextualWordEmbsAug","args":{"model_path":"xlnet-base-cased","model_type":"xlnet","action":"substitute"}}
 
 }
 url=args.gdrive
