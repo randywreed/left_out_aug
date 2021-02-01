@@ -130,6 +130,7 @@ def run_augmentation(func,newaugs,df,nodisp,bs):
 
 from time import time
 import datetime
+from pathlib import Path
 start_time=time()
 import argparse
 parser=argparse.ArgumentParser(description="augmentations to run on google drive csv format columns=text,label")
@@ -140,6 +141,7 @@ parser.add_argument("-nodisp",help="supress display",action="store_true")
 parser.add_argument("-gpu",help="run on gpu",action="store_true")
 parser.add_argument("-bs",help="size to chunk list",type=int, default=100)
 parser.add_argument("-skip",help="enter words that should not be replaced (comma separated)")
+parser.add_argument("-mpath",nargs="*",help="if augment model has special path enter augement:path space separate (word2vec_aug:/spell/ bert_ins_aug:/temp/)")
 args=parser.parse_args()
 
 func_dict={"keyboard_aug":{"method":"nac.KeyboardAug","args":{}},
@@ -150,6 +152,19 @@ func_dict={"keyboard_aug":{"method":"nac.KeyboardAug","args":{}},
   "xlnet_sub_aug":{"method":"naw.ContextualWordEmbsAug","args":{"model_path":"xlnet-base-cased","model_type":"xlnet","action":"substitute"}}
 
 }
+mpath={}
+if args.mpath:
+  for m in args.mpath:
+    key,value=m.split(":",1)
+    mpath[key]=value
+  print(mpath)
+  #update func_dict path
+  for k,v in mpath.items():
+    old_mpath=func_dict[k]['args']['model_path']
+    func_dict[k]['args']['model_path']=str(Path(mpath[k]) / old_mpath)
+  print(func_dict)
+  
+
 url=args.gdrive
 import pandas as pd
 if args.nodisp==False:
