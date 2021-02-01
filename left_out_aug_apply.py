@@ -154,6 +154,8 @@ url=args.gdrive
 import pandas as pd
 if args.nodisp==False:
     tqdm.pandas()
+if args.gpu:
+  print('gpu use selected bs={}'.format(args.bs))
 path = 'https://drive.google.com/uc?export=download&id='+url.split('/')[-2]
 df = pd.read_csv(path,names=['text','label'])
 print('downloaded file {} records to start'.format(df.shape[0]))
