@@ -56,6 +56,12 @@ def xlnet_sub_aug(row):
     new_row=row.to_dict()
     new_row['text']=aug.augment(text)
 
+def split_list(x,chunk):
+    result = []
+    for i in range(0, len(x), chunk):
+        slice_item = slice(i, i + chunk, 1)
+        result.append(x[slice_item])
+    return result
 
 def save_em(output,a,outdf1):
     name=a+"_"+output
@@ -63,8 +69,8 @@ def save_em(output,a,outdf1):
     print('saved to {}'.format(name))
     return outdf1
 
-def run_augmentation(func,newaugs,df,nodisp):
-  from time import time
+def run_augmentation(func,newaugs,df,nodisp,bs):
+  import datetime
   #split sentences, build new df
   output=[]
   def new_split_para(row):
@@ -76,15 +82,19 @@ def run_augmentation(func,newaugs,df,nodisp):
       output.append(new_row)
 
   
-  df.progress_apply(lambda row: new_split_para(row),axis=1)
+  if nodisp:
+    df.apply(lambda row: new_split_para(row),axis=1)
+  else:
+    df.progress_apply(lambda row: new_split_para(row),axis=1)
+  
   new_df=pd.DataFrame(output)
   #run the augmentation on new dataframe
   global aug_out
   aug_out=[]
   
   for a in func:
-    print('starting {} augmentation'.format(a))
-    start_time=time()
+    print('starting {} augmentation time {}'.format(a,datetime.datetime.now()))
+    start_time=datetime.datetime.now()
     new_df_list=new_df['text'].tolist()
     new_df_label=new_df['label'].tolist()
     new_method=func_dict[a]['method']
@@ -97,12 +107,24 @@ def run_augmentation(func,newaugs,df,nodisp):
     m=globals()[m_pieces[0]]
     func=getattr(m,m_pieces[1])
     aug=nafc.Sequential(func(**meth_args))
-    aug_out=aug.augment(new_df_list)
+    if args.gpu:
+      chunks=split_list(new_df_list,bs)
+      clen=len(chunks) 
+      print('retunred {} chunks'.format(clen))
+      cnt=0
+      for c in chunks:
+          cnt+=1
+          print('augmenting chunk {} of {}'.format(cnt,clen))
+          aug_out=aug.augment(new_df_list)
+    else:
+      aug_out=aug.augment(new_df_list)
     print('original record count {} adding {} records'.format(len(new_df_list),len(aug_out)))
     tmp_df=pd.DataFrame(list(zip(aug_out,new_df_label)),columns=["text","label"])
     new_df=new_df.append(tmp_df,ignore_index=True)
     aug_out=[]
-    print('{} augmentation complete, time elapsed {}, total records {}'.format(a,(datetime.timedelta(seconds=time()-start_time)),new_df.shape[0]))
+    end_time=datetime.datetime.now()-start_time
+
+    print('{} augmentation complete, end_time {} time elapsed {}, total records {}'.format(a,datetime.datetime.now().strftime('%H:%M:%S'),end_time,new_df.shape[0]))
     save_em(args.output,a,new_df)
   return new_df
 
@@ -116,6 +138,7 @@ parser.add_argument("-output",help="output file stem (ex. saveit.csv)")
 parser.add_argument("-augs",help="use a comma separate list of augmentations keyboard_aug, spelling_aug,word2vec_aug,bert_sub_aug,bert_ins_aug,xlnet_sub_aug")
 parser.add_argument("-nodisp",help="supress display",action="store_true")
 parser.add_argument("-gpu",help="run on gpu",action="store_true")
+parser.add_argument("-bs",help="size to chunk list",default=400)
 parser.add_argument("-skip",help="enter words that should not be replaced (comma separated)")
 args=parser.parse_args()
 
@@ -138,7 +161,8 @@ print('label values {}'.format(df['label'].value_counts()))
 newaugs=[]
 output=args.output
 nodisp=args.nodisp
+bs=args.bs
 augs=[x.strip() for x in args.augs.split(",")]
 print(augs)
-newaugs_df=run_augmentation(augs,newaugs,df,nodisp)
+newaugs_df=run_augmentation(augs,newaugs,df,nodisp,bs)
 print('{} total records'.format(newaugs_df.shape[0]))
