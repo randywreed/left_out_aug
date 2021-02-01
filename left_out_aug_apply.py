@@ -138,7 +138,7 @@ parser.add_argument("-output",help="output file stem (ex. saveit.csv)")
 parser.add_argument("-augs",help="use a comma separate list of augmentations keyboard_aug, spelling_aug,word2vec_aug,bert_sub_aug,bert_ins_aug,xlnet_sub_aug")
 parser.add_argument("-nodisp",help="supress display",action="store_true")
 parser.add_argument("-gpu",help="run on gpu",action="store_true")
-parser.add_argument("-bs",help="size to chunk list",default=400)
+parser.add_argument("-bs",help="size to chunk list",type=int, default=400)
 parser.add_argument("-skip",help="enter words that should not be replaced (comma separated)")
 args=parser.parse_args()
 
