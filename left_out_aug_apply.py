@@ -107,7 +107,7 @@ def run_augmentation(func,newaugs,df,nodisp,bs):
     m=globals()[m_pieces[0]]
     func=getattr(m,m_pieces[1])
     aug=nafc.Sequential(func(**meth_args))
-    if args.gpu:
+    if args.bs:
       chunks=split_list(new_df_list,bs)
       clen=len(chunks) 
       print('retunred {} chunks'.format(clen))
