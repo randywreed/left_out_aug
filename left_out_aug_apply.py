@@ -107,6 +107,7 @@ def run_augmentation(func,newaugs,df,nodisp,bs):
     m=globals()[m_pieces[0]]
     func=getattr(m,m_pieces[1])
     aug=nafc.Sequential(func(**meth_args))
+    '''
     if args.bs:
       chunks=split_list(new_df_list,bs)
       clen=len(chunks) 
@@ -118,9 +119,14 @@ def run_augmentation(func,newaugs,df,nodisp,bs):
           aug_out=aug.augment(new_df_list)
     else:
       aug_out=aug.augment(new_df_list)
+      '''
+    for idx,row in new_df.iterrows():
+      aug_out.append([aug.augment(row['text']),row['label']])
     print('original record count {} adding {} records'.format(len(new_df_list),len(aug_out)))
-    tmp_df=pd.DataFrame(list(zip(aug_out,new_df_label)),columns=["text","label"])
+    #tmp_df=pd.DataFrame(list(zip(aug_out,new_df_label)),columns=["text","label"])
+    tmp_df=pd.DataFrame(aug_out,columns=['text','label'])
     new_df=new_df.append(tmp_df,ignore_index=True)
+  
     aug_out=[]
     end_time=datetime.datetime.now()-start_time
 
